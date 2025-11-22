@@ -2,18 +2,16 @@
 const UI = (function() {
     function update() {
         const enemies = Units.getEnemies();
-        const world = Player.getWorldOffset();
-
         const player1 = Player.getPlayer();
         const player2 = Player.getPlayer2();
 
-        // Update position
-        document.getElementById('position').textContent = 
-            `${Math.round(world.offsetX)}, ${Math.round(world.offsetY)}`;
-        
+        // Update positions for both players
+        document.getElementById('position').textContent =
+            `Pozice H1: ${Math.round(player1.worldX)}, ${Math.round(player1.worldY)} | Pozice H2: ${Math.round(player2.worldX)}, ${Math.round(player2.worldY)}`;
+
         // Update robot HP
         document.getElementById('robot-hp').textContent = Math.max(0, enemies[0].hp);
-        
+
         // Update UI for all players
         updatePlayerUI();
     }

@@ -41,24 +41,24 @@ const Rendering = (function() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 
-    function drawGrid() {
-        const world = Player.getWorldOffset();
+    function drawGrid(camera, viewportOriginX, viewportWidth) {
         ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
         ctx.lineWidth = 1;
-        
+
         const gridSize = Config.get('map.gridSize');
-        
-        for (let x = -world.offsetX % gridSize; x < canvas.width; x += gridSize) {
+        const viewportHeight = 600;
+
+        for (let x = -camera.offsetX % gridSize; x < viewportWidth; x += gridSize) {
             ctx.beginPath();
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x, canvas.height);
+            ctx.moveTo(viewportOriginX + x, 0);
+            ctx.lineTo(viewportOriginX + x, viewportHeight);
             ctx.stroke();
         }
-        
-        for (let y = -world.offsetY % gridSize; y < canvas.height; y += gridSize) {
+
+        for (let y = -camera.offsetY % gridSize; y < viewportHeight; y += gridSize) {
             ctx.beginPath();
-            ctx.moveTo(0, y);
-            ctx.lineTo(canvas.width, y);
+            ctx.moveTo(viewportOriginX, y);
+            ctx.lineTo(viewportOriginX + viewportWidth, y);
             ctx.stroke();
         }
     }
@@ -67,21 +67,29 @@ const Rendering = (function() {
         const barWidth = width;
         const barHeight = 5;
         const barY = screenY - 35;
-        
+
         // Background
         ctx.fillStyle = '#c0392b';
         ctx.fillRect(screenX - barWidth / 2, barY, barWidth, barHeight);
-        
+
         // Current health
         ctx.fillStyle = '#2ecc71';
         ctx.fillRect(screenX - barWidth / 2, barY, (hp / maxHp) * barWidth, barHeight);
     }
 
-    function drawPlayer() {
+    function screenCoordinate(worldX, worldY, camera, viewportOriginX) {
+        const viewportHeight = 600;
+        const viewportCenterX = viewportOriginX + 400; // 800/2
+        const screenX = worldX - camera.offsetX + viewportCenterX;
+        const screenY = worldY - camera.offsetY + viewportHeight / 2;
+        return { screenX, screenY };
+    }
+
+    function drawPlayer(camera, viewportOriginX) {
         const player = Player.getPlayer();
-        const world = Player.getWorldOffset();
-        const screenX = player.worldX - world.offsetX + canvas.width / 2;
-        const screenY = player.worldY - world.offsetY + canvas.height / 2;
+        const coord = screenCoordinate(player.worldX, player.worldY, camera, viewportOriginX);
+        const screenX = coord.screenX;
+        const screenY = coord.screenY;
         
         if (player.hp <= 0) return;
         
@@ -119,11 +127,11 @@ const Rendering = (function() {
         drawHealthBar(screenX, screenY, player.hp, player.maxHp, player.width);
     }
 
-    function drawPlayer2() {
+    function drawPlayer2(camera, viewportOriginX) {
         const player2 = Player.getPlayer2();
-        const world = Player.getWorldOffset();
-        const screenX = player2.worldX - world.offsetX + canvas.width / 2;
-        const screenY = player2.worldY - world.offsetY + canvas.height / 2;
+        const coord = screenCoordinate(player2.worldX, player2.worldY, camera, viewportOriginX);
+        const screenX = coord.screenX;
+        const screenY = coord.screenY;
         
         if (player2.hp <= 0) return;
         
@@ -151,10 +159,10 @@ const Rendering = (function() {
         drawHealthBar(screenX, screenY, player2.hp, player2.maxHp, player2.width);
     }
 
-    function drawRobot(enemy) {
-        const world = Player.getWorldOffset();
-        const screenX = enemy.worldX - world.offsetX + canvas.width / 2;
-        const screenY = enemy.worldY - world.offsetY + canvas.height / 2;
+    function drawRobot(enemy, camera, viewportOriginX) {
+        const coord = screenCoordinate(enemy.worldX, enemy.worldY, camera, viewportOriginX);
+        const screenX = coord.screenX;
+        const screenY = coord.screenY;
         
         // Robot body
         ctx.fillStyle = enemy.isAttacking ? '#c0392b' : (enemy.isSlow ? '#7f8c8d' : enemy.color);
@@ -205,10 +213,10 @@ const Rendering = (function() {
         drawHealthBar(screenX, screenY, enemy.hp, enemy.maxHp, enemy.width);
     }
 
-    function drawArcher(ally) {
-        const world = Player.getWorldOffset();
-        const screenX = ally.worldX - world.offsetX + canvas.width / 2;
-        const screenY = ally.worldY - world.offsetY + canvas.height / 2;
+    function drawArcher(ally, camera, viewportOriginX) {
+        const coord = screenCoordinate(ally.worldX, ally.worldY, camera, viewportOriginX);
+        const screenX = coord.screenX;
+        const screenY = coord.screenY;
         
         if (ally.hp <= 0) return;
         
@@ -246,10 +254,10 @@ const Rendering = (function() {
         drawHealthBar(screenX, screenY, ally.hp, ally.maxHp, ally.width);
     }
 
-    function drawHealer(ally) {
-        const world = Player.getWorldOffset();
-        const screenX = ally.worldX - world.offsetX + canvas.width / 2;
-        const screenY = ally.worldY - world.offsetY + canvas.height / 2;
+    function drawHealer(ally, camera, viewportOriginX) {
+        const coord = screenCoordinate(ally.worldX, ally.worldY, camera, viewportOriginX);
+        const screenX = coord.screenX;
+        const screenY = coord.screenY;
         
         if (ally.hp <= 0) return;
         
@@ -293,16 +301,16 @@ const Rendering = (function() {
         drawHealthBar(screenX, screenY, ally.hp, ally.maxHp, ally.width);
     }
 
-    function drawProjectiles() {
+    function drawProjectiles(camera, viewportOriginX) {
         const projectiles = Projectiles.getAll();
         const arrows = Projectiles.getArrows();
         const healProjectiles = Projectiles.getHealProjectiles();
-        const world = Player.getWorldOffset();
-        
+
         // Draw ally projectiles
         projectiles.forEach(proj => {
-            const screenX = proj.worldX - world.offsetX + canvas.width / 2;
-            const screenY = proj.worldY - world.offsetY + canvas.height / 2;
+            const coord = screenCoordinate(proj.worldX, proj.worldY, camera, viewportOriginX);
+            const screenX = coord.screenX;
+            const screenY = coord.screenY;
 
             ctx.fillStyle = '#c0392b';
             ctx.beginPath();
@@ -312,8 +320,9 @@ const Rendering = (function() {
 
         // Draw arrows (distinct appearance)
         arrows.forEach(proj => {
-            const screenX = proj.worldX - world.offsetX + canvas.width / 2;
-            const screenY = proj.worldY - world.offsetY + canvas.height / 2;
+            const coord = screenCoordinate(proj.worldX, proj.worldY, camera, viewportOriginX);
+            const screenX = coord.screenX;
+            const screenY = coord.screenY;
 
             // Arrow shaft
             ctx.strokeStyle = '#8e44ad';
@@ -322,7 +331,7 @@ const Rendering = (function() {
             ctx.moveTo(screenX - proj.dx * 10, screenY - proj.dy * 10);
             ctx.lineTo(screenX + proj.dx * 10, screenY + proj.dy * 10);
             ctx.stroke();
-            
+
             // Arrow head
             ctx.fillStyle = '#c0392b';
             ctx.beginPath();
@@ -335,8 +344,9 @@ const Rendering = (function() {
 
         // Draw heal projectiles (green, glowing effect)
         healProjectiles.forEach(proj => {
-            const screenX = proj.worldX - world.offsetX + canvas.width / 2;
-            const screenY = proj.worldY - world.offsetY + canvas.height / 2;
+            const coord = screenCoordinate(proj.worldX, proj.worldY, camera, viewportOriginX);
+            const screenX = coord.screenX;
+            const screenY = coord.screenY;
 
             // Glowing effect
             ctx.globalAlpha = 0.3;
@@ -344,7 +354,7 @@ const Rendering = (function() {
             ctx.beginPath();
             ctx.arc(screenX, screenY, 12, 0, Math.PI * 2);
             ctx.fill();
-            
+
             // Core projectile
             ctx.globalAlpha = 1;
             ctx.fillStyle = '#27ae60';
@@ -354,7 +364,7 @@ const Rendering = (function() {
             ctx.arc(screenX, screenY, 6, 0, Math.PI * 2);
             ctx.fill();
             ctx.stroke();
-            
+
             // Plus sign for healing
             ctx.strokeStyle = 'white';
             ctx.lineWidth = 2;
@@ -367,13 +377,13 @@ const Rendering = (function() {
         });
     }
 
-    function drawObstacles() {
+    function drawObstacles(camera, viewportOriginX) {
         const obstacles = Obstacles.getAll();
-        const world = Player.getWorldOffset();
-        
+
         obstacles.forEach(obstacle => {
-            const screenX = obstacle.worldX - world.offsetX + canvas.width / 2;
-            const screenY = obstacle.worldY - world.offsetY + canvas.height / 2;
+            const coord = screenCoordinate(obstacle.worldX, obstacle.worldY, camera, viewportOriginX);
+            const screenX = coord.screenX;
+            const screenY = coord.screenY;
 
             // Obstacle body
             ctx.fillStyle = obstacle.color;
@@ -396,22 +406,53 @@ const Rendering = (function() {
         });
     }
 
+    function renderViewport(camera, viewportOriginX, viewportWidth) {
+        const viewportHeight = 600;
+
+        // Save canvas state and set clipping
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(viewportOriginX, 0, viewportWidth, viewportHeight);
+        ctx.clip();
+
+        // Clear viewport
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(viewportOriginX, 0, viewportWidth, viewportHeight);
+
+        // Draw grid, obstacles, projectiles
+        drawGrid(camera, viewportOriginX, viewportWidth);
+        drawObstacles(camera, viewportOriginX);
+        drawProjectiles(camera, viewportOriginX);
+
+        // Draw enemies
+        const enemies = Units.getEnemies();
+        enemies.forEach(enemy => drawRobot(enemy, camera, viewportOriginX));
+
+        // Draw both players in both viewports
+        drawPlayer(camera, viewportOriginX);
+        drawPlayer2(camera, viewportOriginX);
+
+        // Restore canvas state
+        ctx.restore();
+    }
+
     function render() {
         clear();
-        drawGrid();
-        drawObstacles();
-        drawProjectiles();
 
-        const enemies = Units.getEnemies();
-        
-        // Draw enemies
-        enemies.forEach(enemy => drawRobot(enemy));
-        
-        // Draw all players
-        drawPlayer();
-        drawPlayer2();
+        const viewportWidth = 800;
+        const viewportHeight = 600;
 
-        // Draw mini-maps
+        // Get cameras for both players
+        const camera1 = Player.getCamera(0);
+        const camera2 = Player.getCamera(1);
+
+        // Render left viewport (Player 1)
+        renderViewport(camera1, 0, viewportWidth);
+
+        // Render right viewport (Player 2)
+        renderViewport(camera2, viewportWidth, viewportWidth);
+
+        // Draw unified mini-maps (outside clipped regions)
         drawMiniMaps();
     }
 

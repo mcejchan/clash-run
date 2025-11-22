@@ -5,8 +5,8 @@ const Game = (function() {
     async function init() {
         canvas = document.getElementById('gameCanvas');
         
-        // Set canvas dimensions
-        canvas.width = 800;
+        // Set canvas dimensions for split-screen (1600x600 = two 800x600 viewports)
+        canvas.width = 1600;
         canvas.height = 600;
         
         // Wait for config to load before initializing units

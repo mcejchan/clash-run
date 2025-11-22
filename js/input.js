@@ -84,18 +84,21 @@ const Input = (function() {
 
     function getShootDirection() {
         const canvas = document.getElementById('gameCanvas');
-        const centerX = canvas.width / 2;
+        const viewportWidth = 800;
+
+        // Player 1 (left viewport) aims relative to left viewport center
+        const centerX = viewportWidth / 2;
         const centerY = canvas.height / 2;
-        
+
         const dx = mouseX - centerX;
         const dy = mouseY - centerY;
         const distance = Math.sqrt(dx * dx + dy * dy);
-        
+
         // If mouse is at center or not tracked, shoot forward
         if (distance < 10) {
             return { dx: 1, dy: 0 };
         }
-        
+
         return {
             dx: dx / distance,
             dy: dy / distance
@@ -104,19 +107,35 @@ const Input = (function() {
 
     function getShootDirectionForPosition(worldX, worldY) {
         const canvas = document.getElementById('gameCanvas');
+        const viewportWidth = 800;
         const world = Player.getWorldOffset ? Player.getWorldOffset() : { offsetX: 0, offsetY: 0 };
-        const screenX = worldX - world.offsetX + canvas.width / 2;
-        const screenY = worldY - world.offsetY + canvas.height / 2;
-        
+
+        // Determine which viewport the mouse is in
+        let viewportCenterX, viewportOriginX;
+        if (mouseX < viewportWidth) {
+            // Mouse in left viewport (Player 1)
+            viewportCenterX = viewportWidth / 2;
+            viewportOriginX = 0;
+        } else {
+            // Mouse in right viewport (Player 2)
+            viewportCenterX = viewportWidth + viewportWidth / 2;
+            viewportOriginX = viewportWidth;
+        }
+
+        // Get Player 2's camera for correct positioning
+        const camera2 = Player.getCamera(1);
+        const screenX = worldX - camera2.offsetX + viewportCenterX;
+        const screenY = worldY - camera2.offsetY + canvas.height / 2;
+
         const dx = mouseX - screenX;
         const dy = mouseY - screenY;
         const distance = Math.sqrt(dx * dx + dy * dy);
-        
+
         // If mouse is at center or not tracked, shoot forward
         if (distance < 10) {
             return { dx: 1, dy: 0 };
         }
-        
+
         return {
             dx: dx / distance,
             dy: dy / distance
