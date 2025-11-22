@@ -2,10 +2,39 @@
 const Rendering = (function() {
     let canvas;
     let ctx;
+    let minimap1Canvas, minimap2Canvas;
+    let minimap1Ctx, minimap2Ctx;
+    let minimap1CtxCreated = false, minimap2CtxCreated = false;
 
     function init(canvasElement) {
         canvas = canvasElement;
         ctx = canvas.getContext('2d');
+
+        // Create mini-map canvases
+        minimap1Canvas = document.createElement('canvas');
+        minimap2Canvas = document.createElement('canvas');
+        
+        minimap1Canvas.width = 120;
+        minimap1Canvas.height = 80;
+        minimap2Canvas.width = 120;
+        minimap2Canvas.height = 80;
+        
+        // Add mini-maps to DOM
+        minimap1Canvas.id = 'minimap1';
+        minimap2Canvas.id = 'minimap2';
+        minimap1Canvas.className = 'minimap';
+        minimap2Canvas.className = 'minimap';
+        
+        const infoDiv = document.getElementById('info');
+        if (infoDiv) {
+            infoDiv.appendChild(minimap1Canvas);
+            infoDiv.appendChild(minimap2Canvas);
+        }
+        
+        minimap1Ctx = minimap1Canvas.getContext('2d');
+        minimap2Ctx = minimap2Canvas.getContext('2d');
+        minimap1CtxCreated = true;
+        minimap2CtxCreated = true;
     }
 
     function clear() {
@@ -50,58 +79,25 @@ const Rendering = (function() {
 
     function drawPlayer() {
         const player = Player.getPlayer();
+        const world = Player.getWorldOffset();
+        const screenX = player.worldX - world.offsetX + canvas.width / 2;
+        const screenY = player.worldY - world.offsetY + canvas.height / 2;
+        
+        if (player.hp <= 0) return;
+        
+        // Body (green for archer)
         ctx.fillStyle = player.color;
         ctx.fillRect(
-            player.x - player.width / 2,
-            player.y - player.height / 2,
+            screenX - player.width / 2,
+            screenY - player.height / 2,
             player.width,
             player.height
-        );
-        
-        ctx.fillStyle = '#f39c12';
-        ctx.beginPath();
-        ctx.arc(player.x, player.y - player.height / 2 - 10, 15, 0, Math.PI * 2);
-        ctx.fill();
-        
-        ctx.fillStyle = 'white';
-        ctx.beginPath();
-        ctx.arc(player.x - 5, player.y - player.height / 2 - 12, 4, 0, Math.PI * 2);
-        ctx.arc(player.x + 5, player.y - player.height / 2 - 12, 4, 0, Math.PI * 2);
-        ctx.fill();
-        
-        ctx.fillStyle = 'black';
-        ctx.beginPath();
-        ctx.arc(player.x - 5, player.y - player.height / 2 - 12, 2, 0, Math.PI * 2);
-        ctx.arc(player.x + 5, player.y - player.height / 2 - 12, 2, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Draw health bar if player has HP
-        if (player.hp && player.maxHp) {
-            drawHealthBar(player.x, player.y, player.hp, player.maxHp, player.width);
-        }
-    }
-
-    function drawPlayer2() {
-        const player2 = Player.getPlayer2();
-        const world = Player.getWorldOffset();
-        const screenX = player2.worldX - world.offsetX + canvas.width / 2;
-        const screenY = player2.worldY - world.offsetY + canvas.height / 2;
-        
-        if (player2.hp <= 0) return;
-        
-        // Body
-        ctx.fillStyle = player2.color;
-        ctx.fillRect(
-            screenX - player2.width / 2,
-            screenY - player2.height / 2,
-            player2.width,
-            player2.height
         );
         
         // Head
         ctx.fillStyle = '#f39c12';
         ctx.beginPath();
-        ctx.arc(screenX, screenY - player2.height / 2 - 10, 12, 0, Math.PI * 2);
+        ctx.arc(screenX, screenY - player.height / 2 - 10, 12, 0, Math.PI * 2);
         ctx.fill();
         
         // Bow
@@ -120,30 +116,30 @@ const Rendering = (function() {
         ctx.stroke();
         
         // Health
-        drawHealthBar(screenX, screenY, player2.hp, player2.maxHp, player2.width);
+        drawHealthBar(screenX, screenY, player.hp, player.maxHp, player.width);
     }
 
-    function drawPlayer3() {
-        const player3 = Player.getPlayer3();
+    function drawPlayer2() {
+        const player2 = Player.getPlayer2();
         const world = Player.getWorldOffset();
-        const screenX = player3.worldX - world.offsetX + canvas.width / 2;
-        const screenY = player3.worldY - world.offsetY + canvas.height / 2;
+        const screenX = player2.worldX - world.offsetX + canvas.width / 2;
+        const screenY = player2.worldY - world.offsetY + canvas.height / 2;
         
-        if (player3.hp <= 0) return;
+        if (player2.hp <= 0) return;
         
-        // Body
-        ctx.fillStyle = player3.color;
+        // Body (purple for healer)
+        ctx.fillStyle = player2.color;
         ctx.fillRect(
-            screenX - player3.width / 2,
-            screenY - player3.height / 2,
-            player3.width,
-            player3.height
+            screenX - player2.width / 2,
+            screenY - player2.height / 2,
+            player2.width,
+            player2.height
         );
         
         // Head
         ctx.fillStyle = '#f39c12';
         ctx.beginPath();
-        ctx.arc(screenX, screenY - player3.height / 2 - 10, 12, 0, Math.PI * 2);
+        ctx.arc(screenX, screenY - player2.height / 2 - 10, 12, 0, Math.PI * 2);
         ctx.fill();
         
         // Medical cross
@@ -152,7 +148,7 @@ const Rendering = (function() {
         ctx.fillRect(screenX - 2.5, screenY - 11, 5, 16);
         
         // Health
-        drawHealthBar(screenX, screenY, player3.hp, player3.maxHp, player3.width);
+        drawHealthBar(screenX, screenY, player2.hp, player2.maxHp, player2.width);
     }
 
     function drawRobot(enemy) {
@@ -299,7 +295,6 @@ const Rendering = (function() {
 
     function drawProjectiles() {
         const projectiles = Projectiles.getAll();
-        const playerProjectiles = Projectiles.getPlayerProjectiles();
         const arrows = Projectiles.getArrows();
         const healProjectiles = Projectiles.getHealProjectiles();
         const world = Player.getWorldOffset();
@@ -313,29 +308,6 @@ const Rendering = (function() {
             ctx.beginPath();
             ctx.arc(screenX, screenY, 4, 0, Math.PI * 2);
             ctx.fill();
-        });
-
-        // Draw player projectiles (different color)
-        playerProjectiles.forEach(proj => {
-            const screenX = proj.worldX - world.offsetX + canvas.width / 2;
-            const screenY = proj.worldY - world.offsetY + canvas.height / 2;
-
-            ctx.fillStyle = '#f39c12';
-            ctx.strokeStyle = '#e67e22';
-            ctx.lineWidth = 2;
-            
-            // Draw projectile with trail effect
-            ctx.beginPath();
-            ctx.arc(screenX, screenY, 5, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.stroke();
-            
-            // Trail effect
-            ctx.globalAlpha = 0.4;
-            ctx.beginPath();
-            ctx.arc(screenX - proj.dx * 8, screenY - proj.dy * 8, 3, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.globalAlpha = 1;
         });
 
         // Draw arrows (distinct appearance)
@@ -431,19 +403,132 @@ const Rendering = (function() {
         drawProjectiles();
 
         const enemies = Units.getEnemies();
-        const allies = Units.getAllies();
         
-        // Draw units
+        // Draw enemies
         enemies.forEach(enemy => drawRobot(enemy));
-        allies.forEach((ally, index) => {
-            if (index === 0) drawArcher(ally);
-            else drawHealer(ally);
-        });
-
+        
         // Draw all players
         drawPlayer();
         drawPlayer2();
-        drawPlayer3();
+
+        // Draw mini-maps
+        drawMiniMaps();
+    }
+
+    function drawMiniMaps() {
+        if (!minimap1CtxCreated || !minimap2CtxCreated) return;
+
+        const player1 = Player.getPlayer();
+        const player2 = Player.getPlayer2();
+        const world = Player.getWorldOffset();
+
+        // Draw mini-map 1 (for player 1)
+        drawMinimap(minimap1Ctx, minimap1Canvas, player1, player2, world);
+        
+        // Draw mini-map 2 (for player 2)
+        drawMinimap(minimap2Ctx, minimap2Canvas, player2, player1, world);
+    }
+
+    function drawMinimap(ctx, minimapCanvas, currentPlayer, otherPlayer, world) {
+        const minimapScale = 0.15; // Scale factor for mini-map
+        const minimapRange = 300; // World space range shown on mini-map
+        
+        // Clear mini-map
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        ctx.fillRect(0, 0, minimapCanvas.width, minimapCanvas.height);
+        
+        // Draw grid
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+        ctx.lineWidth = 1;
+        
+        for (let x = 0; x < minimapCanvas.width; x += 10) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, minimapCanvas.height);
+            ctx.stroke();
+        }
+        
+        for (let y = 0; y < minimapCanvas.height; y += 10) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(minimapCanvas.width, y);
+            ctx.stroke();
+        }
+
+        // Draw enemies
+        const enemies = Units.getEnemies();
+        enemies.forEach(enemy => {
+            if (enemy.hp <= 0) return;
+            
+            const dx = enemy.worldX - currentPlayer.worldX;
+            const dy = enemy.worldY - currentPlayer.worldY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            
+            if (dist < minimapRange) {
+                const minimapX = minimapCanvas.width / 2 + (dx * minimapScale);
+                const minimapY = minimapCanvas.height / 2 + (dy * minimapScale);
+                
+                ctx.fillStyle = '#e74c3c';
+                ctx.beginPath();
+                ctx.arc(minimapX, minimapY, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        });
+
+        // Draw projectiles
+        const arrows = Projectiles.getArrows();
+        const healProjectiles = Projectiles.getHealProjectiles();
+        const allProjectiles = [...arrows, ...healProjectiles];
+        
+        allProjectiles.forEach(proj => {
+            const dx = proj.worldX - currentPlayer.worldX;
+            const dy = proj.worldY - currentPlayer.worldY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            
+            if (dist < minimapRange) {
+                const minimapX = minimapCanvas.width / 2 + (dx * minimapScale);
+                const minimapY = minimapCanvas.height / 2 + (dy * minimapScale);
+                
+                if (proj.isHeal) {
+                    ctx.fillStyle = '#2ecc71';
+                } else {
+                    ctx.fillStyle = '#9b59b6';
+                }
+                ctx.beginPath();
+                ctx.arc(minimapX, minimapY, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        });
+
+        // Draw current player (always in center)
+        ctx.fillStyle = '#27ae60'; // Green for player 1
+        ctx.beginPath();
+        ctx.arc(minimapCanvas.width / 2, minimapCanvas.height / 2, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Draw other player
+        if (otherPlayer && otherPlayer.hp > 0) {
+            const dx = otherPlayer.worldX - currentPlayer.worldX;
+            const dy = otherPlayer.worldY - currentPlayer.worldY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            
+            if (dist < minimapRange) {
+                const minimapX = minimapCanvas.width / 2 + (dx * minimapScale);
+                const minimapY = minimapCanvas.height / 2 + (dy * minimapScale);
+                
+                ctx.fillStyle = '#8e44ad'; // Purple for player 2
+                ctx.beginPath();
+                ctx.arc(minimapX, minimapY, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Draw range indicator (visibility circle)
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(minimapCanvas.width / 2, minimapCanvas.height / 2, minimapRange * minimapScale, 0, Math.PI * 2);
+        ctx.stroke();
     }
 
     return {

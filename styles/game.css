@@ -91,3 +91,25 @@ body {
 #player-cooldown span[style*="color: rgb(231, 76, 60)"] {
     background: rgba(231, 76, 60, 0.2);
 }
+
+/* Mini-map styles */
+.minimap {
+    position: absolute;
+    bottom: 10px;
+    background: rgba(0, 0, 0, 0.9);
+    border: 2px solid #2d3436;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+#minimap1 {
+    left: 10px;
+}
+
+#minimap2 {
+    right: 10px;
+}
+
+.minimap canvas {
+    border-radius: 4px;
+}

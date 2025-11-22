@@ -20,9 +20,8 @@ const Game = (function() {
         UI.init();
         
         // Generate obstacles after units are initialized
-        const allies = Units.getAllies();
         const enemies = Units.getEnemies();
-        Obstacles.generateObstacles(allies, enemies);
+        Obstacles.generateObstacles([], enemies);
         
         console.log('Game initialized');
     }

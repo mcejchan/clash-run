@@ -1,50 +1,12 @@
 // Unit system for ClashRun
 const Units = (function() {
     let canvas;
-    let allies = [];
     let enemies = [];
 
     function init(canvasElement) {
         canvas = canvasElement;
 
-        // Initialize allies
-        allies = [
-            {
-                name: 'Lukostřelec',
-                x: canvas.width / 2 - 40,
-                y: canvas.height / 2 + 60,
-                worldX: -40,
-                worldY: 60,
-                width: Config.get('archer.width'),
-                height: Config.get('archer.height'),
-                speed: Config.get('archer.speed'),
-                color: Config.get('archer.color'),
-                hp: Config.get('archer.hp'),
-                maxHp: Config.get('archer.maxHp'),
-                attackTimer: 0,
-                attackCooldown: Config.get('archer.attackCooldown'),
-                attackRange: Config.get('archer.attackRange'),
-                damage: Config.get('archer.damage')
-            },
-            {
-                name: 'Lékař',
-                x: canvas.width / 2 + 60,
-                y: canvas.height / 2 + 40,
-                worldX: 60,
-                worldY: 40,
-                width: Config.get('healer.width'),
-                height: Config.get('healer.height'),
-                speed: Config.get('healer.speed'),
-                color: Config.get('healer.color'),
-                hp: Config.get('healer.hp'),
-                maxHp: Config.get('healer.maxHp'),
-                healTimer: 0,
-                healCooldown: Config.get('healer.healCooldown'),
-                healAmount: Config.get('healer.healAmount')
-            }
-        ];
-
-        // Initialize enemies
+        // Initialize enemies only
         enemies = [
             {
                 name: 'Robot',
@@ -78,29 +40,23 @@ const Units = (function() {
         enemies.forEach(enemy => {
             if (enemy.hp <= 0) return;
 
-            // Get all possible targets (allies + players)
-            const allies = Units.getAllies();
+            // Get all players as targets
             const players = Player.getAllPlayers();
-            const allTargets = [...allies, ...players];
 
-            // Find nearest target (prioritize players)
+            // Find nearest target
             let target = null;
             let targetDist = Infinity;
 
-            allTargets.forEach(t => {
-                if (t.hp <= 0) return;
+            players.forEach(p => {
+                if (p.hp <= 0) return;
                 
-                const dx = t.worldX - enemy.worldX;
-                const dy = t.worldY - enemy.worldY;
+                const dx = p.worldX - enemy.worldX;
+                const dy = p.worldY - enemy.worldY;
                 const dist = Math.sqrt(dx * dx + dy * dy);
 
-                // Prioritize players over allies
-                const isPlayer = players.includes(t);
-                const priorityBonus = isPlayer ? -50 : 0; // Players get priority
-                
-                if (dist + priorityBonus < targetDist) {
+                if (dist < targetDist) {
                     targetDist = dist;
-                    target = t;
+                    target = p;
                 }
             });
 
@@ -199,99 +155,12 @@ const Units = (function() {
     }
 
     function updateAllies() {
-        const world = Player.getWorldOffset();
-
-        allies.forEach((ally, index) => {
-            if (ally.hp <= 0) return;
-            
-            // Target position (follow player/camera)
-            const targetWorldX = world.offsetX;
-            const targetWorldY = world.offsetY;
-            
-            const dx = targetWorldX - ally.worldX;
-            const dy = targetWorldY - ally.worldY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            // Move towards player
-            const followDistance = index === 0 ? 50 : 40;
-            const allyCollisionRadius = Config.get('collision.allyRadius');
-            if (distance > followDistance) {
-                const moveX = (dx / distance) * ally.speed;
-                const moveY = (dy / distance) * ally.speed;
-
-                // Try to move (collision check)
-                if (!Obstacles.checkCollisionWithObstacles(ally.worldX + moveX, ally.worldY + moveY, allyCollisionRadius)) {
-                    ally.worldX += moveX;
-                    ally.worldY += moveY;
-                } else {
-                    // Try to avoid collision by moving sideways
-                    const perpX = -dy;
-                    const perpY = dx;
-                    const perpLen = Math.sqrt(perpX * perpX + perpY * perpY);
-
-                    if (perpLen > 0) {
-                        const sideX = (perpX / perpLen) * ally.speed * 0.7;
-                        const sideY = (perpY / perpLen) * ally.speed * 0.7;
-
-                        if (!Obstacles.checkCollisionWithObstacles(ally.worldX + sideX, ally.worldY + sideY, allyCollisionRadius)) {
-                            ally.worldX += sideX;
-                            ally.worldY += sideY;
-                        } else {
-                            // Try opposite direction
-                            if (!Obstacles.checkCollisionWithObstacles(ally.worldX - sideX, ally.worldY - sideY, allyCollisionRadius)) {
-                                ally.worldX -= sideX;
-                                ally.worldY -= sideY;
-                            }
-                        }
-                    }
-                }
-            }
-            
-            // Archer - attacks robot
-            if (index === 0 && ally.attackTimer < ally.attackCooldown) {
-                ally.attackTimer++;
-            }
-            
-            if (index === 0 && ally.attackTimer >= ally.attackCooldown) {
-                // Find nearest enemy
-                enemies.forEach(enemy => {
-                    if (enemy.hp <= 0) return;
-                    
-                    const dx = enemy.worldX - ally.worldX;
-                    const dy = enemy.worldY - ally.worldY;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    
-                    if (dist < ally.attackRange) {
-                        // Shoot arrow
-                        Projectiles.create(ally.worldX, ally.worldY, dx / dist, dy / dist, ally.damage, enemy);
-                        ally.attackTimer = 0;
-                    }
-                });
-            }
-            
-            // Healer - heals allies
-            if (index === 1) {
-                if (ally.healTimer > 0) {
-                    ally.healTimer--;
-                }
-                
-                ally.attackTimer++;
-                if (ally.attackTimer >= ally.healCooldown) {
-                    // Find injured ally
-                    allies.forEach(a => {
-                        if (a.hp > 0 && a.hp < a.maxHp) {
-                            a.hp = Math.min(a.hp + ally.healAmount, a.maxHp);
-                            ally.healTimer = 30;
-                            ally.attackTimer = 0;
-                        }
-                    });
-                }
-            }
-        });
+        // No allies anymore - this function is kept for compatibility
     }
 
     function getAllies() {
-        return allies;
+        // No allies anymore - return empty array
+        return [];
     }
 
     function getEnemies() {

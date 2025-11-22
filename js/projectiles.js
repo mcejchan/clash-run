@@ -1,7 +1,6 @@
 // Projectile system for ClashRun
 const Projectiles = (function() {
     let projectiles = [];
-    let playerProjectiles = [];
     let arrows = [];
     let healProjectiles = [];
 
@@ -15,19 +14,6 @@ const Projectiles = (function() {
             damage,
             target,
             isPlayer: false
-        });
-    }
-
-    function createPlayerProjectile(worldX, worldY, dx, dy, damage) {
-        playerProjectiles.push({
-            worldX,
-            worldY,
-            dx,
-            dy,
-            speed: 8,
-            damage,
-            target: null,
-            isPlayer: true
         });
     }
 
@@ -91,47 +77,6 @@ const Projectiles = (function() {
             }
         }
 
-        // Update player projectiles
-        for (let i = playerProjectiles.length - 1; i >= 0; i--) {
-            const proj = playerProjectiles[i];
-            
-            proj.worldX += proj.dx * proj.speed;
-            proj.worldY += proj.dy * proj.speed;
-            
-            // Check collision with enemies
-            const enemies = Units.getEnemies();
-            let hit = false;
-            
-            enemies.forEach(enemy => {
-                if (enemy.hp <= 0) return;
-                
-                const dx = enemy.worldX - proj.worldX;
-                const dy = enemy.worldY - proj.worldY;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                
-                if (dist < 25) {
-                    enemy.hp -= proj.damage;
-                    hit = true;
-                }
-            });
-            
-            if (hit) {
-                playerProjectiles.splice(i, 1);
-                continue;
-            }
-            
-            // Remove projectiles off screen
-            const world = Player.getWorldOffset();
-            const canvas = document.getElementById('gameCanvas');
-            const screenX = proj.worldX - world.offsetX + canvas.width / 2;
-            const screenY = proj.worldY - world.offsetY + canvas.height / 2;
-            
-            if (screenX < -50 || screenX > canvas.width + 50 ||
-                screenY < -50 || screenY > canvas.height + 50) {
-                playerProjectiles.splice(i, 1);
-            }
-        }
-
         // Update arrows
         for (let i = arrows.length - 1; i >= 0; i--) {
             const proj = arrows[i];
@@ -180,11 +125,11 @@ const Projectiles = (function() {
             proj.worldX += proj.dx * proj.speed;
             proj.worldY += proj.dy * proj.speed;
             
-            // Check collision with all allies and players (healing)
+            // Check collision with all players
             let healed = false;
-            const allHealTargets = [...Player.getAllPlayers(), ...Units.getAllies()];
+            const players = Player.getAllPlayers();
             
-            allHealTargets.forEach(target => {
+            players.forEach(target => {
                 if (target.hp <= 0 || target.hp >= target.maxHp) return;
                 
                 const dx = target.worldX - proj.worldX;
@@ -219,10 +164,6 @@ const Projectiles = (function() {
         return projectiles;
     }
 
-    function getPlayerProjectiles() {
-        return playerProjectiles;
-    }
-
     function getArrows() {
         return arrows;
     }
@@ -233,12 +174,10 @@ const Projectiles = (function() {
 
     return {
         create,
-        createPlayerProjectile,
         createArrow,
         createHealProjectile,
         update,
         getAll,
-        getPlayerProjectiles,
         getArrows,
         getHealProjectiles
     };
