@@ -29,4 +29,65 @@ body {
     padding: 15px;
     border-radius: 10px;
     font-size: 14px;
+    max-width: 300px;
+}
+
+#player-stats {
+    border-top: 1px solid #555;
+    margin-top: 10px;
+    padding-top: 10px;
+}
+
+.shoot-button {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: linear-gradient(135deg, #ff6b35, #f7931e);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+    width: 100%;
+}
+
+.shoot-button:hover:not(:disabled) {
+    background: linear-gradient(135deg, #ff8c42, #f9a826);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 12px rgba(255, 107, 53, 0.5);
+}
+
+.shoot-button:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 1px 6px rgba(255, 107, 53, 0.4);
+}
+
+.shoot-button:disabled,
+.shoot-button.on-cooldown {
+    background: linear-gradient(135deg, #636e72, #2d3436);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    opacity: 0.7;
+}
+
+/* Player stats styling */
+#player-stats strong {
+    display: inline-block;
+    margin-right: 5px;
+}
+
+#player-cooldown span {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: rgba(46, 204, 113, 0.2);
+    margin: 0 2px;
+    transition: all 0.2s ease;
+}
+
+#player-cooldown span[style*="color: rgb(231, 76, 60)"] {
+    background: rgba(231, 76, 60, 0.2);
 }

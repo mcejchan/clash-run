@@ -17,6 +17,7 @@ const Game = (function() {
         Player.init(canvas);
         Units.init(canvas);
         Rendering.init(canvas);
+        UI.init();
         
         // Generate obstacles after units are initialized
         const allies = Units.getAllies();

@@ -9,14 +9,20 @@
 <body>
     <div id="info">
         <strong>Ovládání:</strong><br>
-        WASD nebo šipky = pohyb<br>
+        Hráč 1: WASD + Mezerník<br>
+        Hráč 2: IJKL + U<br>
+        Hráč 3: ŠČŘŽ + Y<br>
         Pozice: <span id="position">0, 0</span><br>
         <strong>Tvoje armáda:</strong><br>
         🏹 Lukostřelec: <span id="archer-hp">100</span> HP<br>
         💚 Lékař: <span id="healer-hp">80</span> HP<br>
         <br>
-        <strong style="color: #e74c3c;">⚠️ Nepřítel:</strong><br>
-        🤖 Robot: <span id="robot-hp">150</span> HP
+        <strong style="color: #e74c3c;">⚠️ Nepřátelé:</strong><br>
+        🤖 Robot: <span id="robot-hp">150</span> HP<br>
+        <br>
+        <button id="shoot-button" class="shoot-button">
+            STŘÍLIT [MEZERNÍK]
+        </button>
     </div>
     <canvas id="gameCanvas"></canvas>
 

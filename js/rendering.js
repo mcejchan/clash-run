@@ -74,6 +74,85 @@ const Rendering = (function() {
         ctx.arc(player.x - 5, player.y - player.height / 2 - 12, 2, 0, Math.PI * 2);
         ctx.arc(player.x + 5, player.y - player.height / 2 - 12, 2, 0, Math.PI * 2);
         ctx.fill();
+
+        // Draw health bar if player has HP
+        if (player.hp && player.maxHp) {
+            drawHealthBar(player.x, player.y, player.hp, player.maxHp, player.width);
+        }
+    }
+
+    function drawPlayer2() {
+        const player2 = Player.getPlayer2();
+        const world = Player.getWorldOffset();
+        const screenX = player2.worldX - world.offsetX + canvas.width / 2;
+        const screenY = player2.worldY - world.offsetY + canvas.height / 2;
+        
+        if (player2.hp <= 0) return;
+        
+        // Body
+        ctx.fillStyle = player2.color;
+        ctx.fillRect(
+            screenX - player2.width / 2,
+            screenY - player2.height / 2,
+            player2.width,
+            player2.height
+        );
+        
+        // Head
+        ctx.fillStyle = '#f39c12';
+        ctx.beginPath();
+        ctx.arc(screenX, screenY - player2.height / 2 - 10, 12, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Bow
+        ctx.strokeStyle = '#8e44ad';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(screenX + 20, screenY, 15, -Math.PI / 2, Math.PI / 2, false);
+        ctx.stroke();
+        
+        // Arrow
+        ctx.strokeStyle = '#c0392b';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(screenX + 20, screenY);
+        ctx.lineTo(screenX + 35, screenY);
+        ctx.stroke();
+        
+        // Health
+        drawHealthBar(screenX, screenY, player2.hp, player2.maxHp, player2.width);
+    }
+
+    function drawPlayer3() {
+        const player3 = Player.getPlayer3();
+        const world = Player.getWorldOffset();
+        const screenX = player3.worldX - world.offsetX + canvas.width / 2;
+        const screenY = player3.worldY - world.offsetY + canvas.height / 2;
+        
+        if (player3.hp <= 0) return;
+        
+        // Body
+        ctx.fillStyle = player3.color;
+        ctx.fillRect(
+            screenX - player3.width / 2,
+            screenY - player3.height / 2,
+            player3.width,
+            player3.height
+        );
+        
+        // Head
+        ctx.fillStyle = '#f39c12';
+        ctx.beginPath();
+        ctx.arc(screenX, screenY - player3.height / 2 - 10, 12, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Medical cross
+        ctx.fillStyle = '#2ecc71';
+        ctx.fillRect(screenX - 8, screenY - 5, 16, 5);
+        ctx.fillRect(screenX - 2.5, screenY - 11, 5, 16);
+        
+        // Health
+        drawHealthBar(screenX, screenY, player3.hp, player3.maxHp, player3.width);
     }
 
     function drawRobot(enemy) {
@@ -220,8 +299,12 @@ const Rendering = (function() {
 
     function drawProjectiles() {
         const projectiles = Projectiles.getAll();
+        const playerProjectiles = Projectiles.getPlayerProjectiles();
+        const arrows = Projectiles.getArrows();
+        const healProjectiles = Projectiles.getHealProjectiles();
         const world = Player.getWorldOffset();
         
+        // Draw ally projectiles
         projectiles.forEach(proj => {
             const screenX = proj.worldX - world.offsetX + canvas.width / 2;
             const screenY = proj.worldY - world.offsetY + canvas.height / 2;
@@ -230,6 +313,85 @@ const Rendering = (function() {
             ctx.beginPath();
             ctx.arc(screenX, screenY, 4, 0, Math.PI * 2);
             ctx.fill();
+        });
+
+        // Draw player projectiles (different color)
+        playerProjectiles.forEach(proj => {
+            const screenX = proj.worldX - world.offsetX + canvas.width / 2;
+            const screenY = proj.worldY - world.offsetY + canvas.height / 2;
+
+            ctx.fillStyle = '#f39c12';
+            ctx.strokeStyle = '#e67e22';
+            ctx.lineWidth = 2;
+            
+            // Draw projectile with trail effect
+            ctx.beginPath();
+            ctx.arc(screenX, screenY, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            
+            // Trail effect
+            ctx.globalAlpha = 0.4;
+            ctx.beginPath();
+            ctx.arc(screenX - proj.dx * 8, screenY - proj.dy * 8, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+        });
+
+        // Draw arrows (distinct appearance)
+        arrows.forEach(proj => {
+            const screenX = proj.worldX - world.offsetX + canvas.width / 2;
+            const screenY = proj.worldY - world.offsetY + canvas.height / 2;
+
+            // Arrow shaft
+            ctx.strokeStyle = '#8e44ad';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(screenX - proj.dx * 10, screenY - proj.dy * 10);
+            ctx.lineTo(screenX + proj.dx * 10, screenY + proj.dy * 10);
+            ctx.stroke();
+            
+            // Arrow head
+            ctx.fillStyle = '#c0392b';
+            ctx.beginPath();
+            ctx.moveTo(screenX, screenY);
+            ctx.lineTo(screenX - proj.dx * 8 - proj.dy * 4, screenY - proj.dy * 8 + proj.dx * 4);
+            ctx.lineTo(screenX - proj.dx * 8 + proj.dy * 4, screenY - proj.dy * 8 - proj.dx * 4);
+            ctx.closePath();
+            ctx.fill();
+        });
+
+        // Draw heal projectiles (green, glowing effect)
+        healProjectiles.forEach(proj => {
+            const screenX = proj.worldX - world.offsetX + canvas.width / 2;
+            const screenY = proj.worldY - world.offsetY + canvas.height / 2;
+
+            // Glowing effect
+            ctx.globalAlpha = 0.3;
+            ctx.fillStyle = '#2ecc71';
+            ctx.beginPath();
+            ctx.arc(screenX, screenY, 12, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Core projectile
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = '#27ae60';
+            ctx.strokeStyle = '#2ecc71';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(screenX, screenY, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            
+            // Plus sign for healing
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(screenX - 3, screenY);
+            ctx.lineTo(screenX + 3, screenY);
+            ctx.moveTo(screenX, screenY - 3);
+            ctx.lineTo(screenX, screenY + 3);
+            ctx.stroke();
         });
     }
 
@@ -278,7 +440,10 @@ const Rendering = (function() {
             else drawHealer(ally);
         });
 
+        // Draw all players
         drawPlayer();
+        drawPlayer2();
+        drawPlayer3();
     }
 
     return {

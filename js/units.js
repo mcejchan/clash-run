@@ -78,27 +78,29 @@ const Units = (function() {
         enemies.forEach(enemy => {
             if (enemy.hp <= 0) return;
 
-            // Prioritize archer (most dangerous)
-            let targetAlly = null;
+            // Get all possible targets (allies + players)
+            const allies = Units.getAllies();
+            const players = Player.getAllPlayers();
+            const allTargets = [...allies, ...players];
+
+            // Find nearest target (prioritize players)
+            let target = null;
             let targetDist = Infinity;
 
-            allies.forEach(ally => {
-                if (ally.hp <= 0) return;
-                const dx = ally.worldX - enemy.worldX;
-                const dy = ally.worldY - enemy.worldY;
+            allTargets.forEach(t => {
+                if (t.hp <= 0) return;
+                
+                const dx = t.worldX - enemy.worldX;
+                const dy = t.worldY - enemy.worldY;
                 const dist = Math.sqrt(dx * dx + dy * dy);
 
-                // Prioritize archer (index 0)
-                if (ally === allies[0]) {
-                    if (dist < targetDist) {
-                        targetDist = dist;
-                        targetAlly = ally;
-                    }
-                } else if (!targetAlly || targetAlly !== allies[0]) {
-                    if (dist < targetDist) {
-                        targetDist = dist;
-                        targetAlly = ally;
-                    }
+                // Prioritize players over allies
+                const isPlayer = players.includes(t);
+                const priorityBonus = isPlayer ? -50 : 0; // Players get priority
+                
+                if (dist + priorityBonus < targetDist) {
+                    targetDist = dist;
+                    target = t;
                 }
             });
 
@@ -138,9 +140,9 @@ const Units = (function() {
                 }
             }
             // Normal behavior - move to target
-            else if (targetAlly) {
-                const dx = targetAlly.worldX - enemy.worldX;
-                const dy = targetAlly.worldY - enemy.worldY;
+            else if (target) {
+                const dx = target.worldX - enemy.worldX;
+                const dy = target.worldY - enemy.worldY;
                 const dist = Math.sqrt(dx * dx + dy * dy);
 
                 if (dist > enemy.attackRange) {
@@ -161,7 +163,7 @@ const Units = (function() {
                     enemy.isAttacking = true;
 
                     if (enemy.attackTimer >= enemy.attackCooldown) {
-                        targetAlly.hp -= enemy.damage;
+                        target.hp -= enemy.damage;
                         enemy.attackTimer = 0;
                     }
                 }
