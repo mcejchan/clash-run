@@ -66,6 +66,12 @@ const Units = (function() {
                 isAttacking: false
             }
         ];
+        
+        // Debug: Log the robot HP values
+        console.log('Robot HP config:', {
+            hp: Config.get('robot.hp'),
+            maxHp: Config.get('robot.maxHp')
+        });
     }
 
     function updateEnemies() {

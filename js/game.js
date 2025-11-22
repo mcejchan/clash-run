@@ -2,12 +2,15 @@
 const Game = (function() {
     let canvas;
 
-    function init() {
+    async function init() {
         canvas = document.getElementById('gameCanvas');
         
         // Set canvas dimensions
         canvas.width = 800;
         canvas.height = 600;
+        
+        // Wait for config to load before initializing units
+        await Config.loadConfig();
         
         // Initialize all systems
         Input.init();
@@ -38,8 +41,9 @@ const Game = (function() {
     }
 
     function start() {
-        init();
-        gameLoop();
+        init().then(() => {
+            gameLoop();
+        });
     }
 
     return {

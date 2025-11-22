@@ -74,19 +74,17 @@ const Config = (function() {
         CONFIG = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
 
         // Try to load from config.properties
-        try {
-            fetch('config.properties')
-                .then(response => response.text())
-                .then(text => {
-                    parseConfigText(text);
-                    console.log('Config načten:', CONFIG);
-                })
-                .catch(error => {
-                    console.warn('Config.properties nebyl nalezen, používám výchozí hodnoty:', error);
-                });
-        } catch (error) {
-            console.warn('Chyba při načítání configu:', error);
-        }
+        return fetch('config.properties')
+            .then(response => response.text())
+            .then(text => {
+                parseConfigText(text);
+                console.log('Config načten:', CONFIG);
+                return CONFIG;
+            })
+            .catch(error => {
+                console.warn('Config.properties nebyl nalezen, používám výchozí hodnoty:', error);
+                return CONFIG;
+            });
     }
 
     function parseConfigText(text) {
@@ -134,6 +132,7 @@ const Config = (function() {
 
     return {
         get,
-        getAll
+        getAll,
+        loadConfig
     };
 })();
