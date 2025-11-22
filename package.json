@@ -1,0 +1,17 @@
+{
+  "name": "clashrun",
+  "version": "1.0.0",
+  "description": "ClashRun - An HTML5 Canvas game project",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"No tests specified yet\" && exit 0",
+    "start": "npx http-server . -p 3000",
+    "dev": "npx http-server . -p 3000 -o"
+  },
+  "keywords": ["game", "javascript", "html5", "canvas"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
