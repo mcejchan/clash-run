@@ -74,7 +74,8 @@ const Config = (function() {
         CONFIG = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
 
         // Try to load from config.properties
-        return fetch('config.properties')
+        const cacheBuster = Date.now();
+        return fetch(`config.properties?cb=${cacheBuster}`, { cache: 'no-store' })
             .then(response => response.text())
             .then(text => {
                 parseConfigText(text);
