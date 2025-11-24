@@ -13,11 +13,37 @@
         Hráč 2: IJKL + Y<br>
         Pozice: <span id="position">0, 0</span><br>
         <br>
+        <strong style="color: #fdcb6e;">💰 Mince: <span id="total-coins">0</span></strong><br>
+        <br>
         <strong style="color: #e74c3c;">⚠️ Nepřátelé:</strong><br>
         🤖 Robot: <span id="robot-hp">150</span> HP<br>
         <br>
     </div>
     <canvas id="gameCanvas"></canvas>
+
+    <!-- Shop Modal -->
+    <div id="shop-modal">
+        <div class="shop-container">
+            <div class="shop-header">
+                <h1>⚔️ Obchod</h1>
+                <div class="shop-coins">💰 <span id="shop-coins-display">0</span> Mincí</div>
+            </div>
+
+            <div id="game-over-display"></div>
+
+            <div class="shop-section">
+                <h2>🎨 Skiny</h2>
+                <div class="shop-items" id="skins-list"></div>
+            </div>
+
+            <div class="shop-section">
+                <h2>⚡ Vylepšení</h2>
+                <div class="shop-items" id="upgrades-list"></div>
+            </div>
+
+            <button class="play-button" id="play-again-button">▶️ Hrát Znovu</button>
+        </div>
+    </div>
 
     <!-- Load all game modules -->
     <script src="js/config.js"></script>
@@ -28,6 +54,8 @@
     <script src="js/units.js"></script>
     <script src="js/rendering.js"></script>
     <script src="js/ui.js"></script>
+    <script src="js/shop.js"></script>
+    <script src="js/shopUI.js"></script>
     <script src="js/game.js"></script>
     <script>
         // Start the game when page loads

@@ -129,6 +129,7 @@ const Player = (function() {
         // Heal all players when healer shoots
         if (Input.isPressed('Y') || Input.isPressed('y')) {
             healAllPlayers();
+            shootProjectileAtEnemy();
         }
     }
 
@@ -171,6 +172,42 @@ const Player = (function() {
                     ally.hp = Math.min(ally.hp + player2.healAmount, ally.maxHp);
                 }
             });
+        }
+    }
+
+    function shootProjectileAtEnemy() {
+        const player2 = players[1];
+        const enemies = Units.getEnemies();
+
+        // Find nearest enemy
+        let nearestEnemy = null;
+        let nearestDist = Infinity;
+
+        enemies.forEach(enemy => {
+            if (enemy.hp <= 0) return;
+
+            const dx = enemy.worldX - player2.worldX;
+            const dy = enemy.worldY - player2.worldY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < nearestDist) {
+                nearestDist = dist;
+                nearestEnemy = enemy;
+            }
+        });
+
+        // If enemy found and in range, shoot at it
+        if (nearestEnemy && nearestDist < 150) {
+            const dx = nearestEnemy.worldX - player2.worldX;
+            const dy = nearestEnemy.worldY - player2.worldY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist > 0) {
+                const dirX = dx / dist;
+                const dirY = dy / dist;
+                const damage = player2.projectileDamage || 15;
+                Projectiles.createDamageProjectile(player2.worldX, player2.worldY, dirX, dirY, damage);
+            }
         }
     }
 

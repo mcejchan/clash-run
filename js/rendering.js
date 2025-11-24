@@ -305,6 +305,7 @@ const Rendering = (function() {
         const projectiles = Projectiles.getAll();
         const arrows = Projectiles.getArrows();
         const healProjectiles = Projectiles.getHealProjectiles();
+        const damageProjectiles = Projectiles.getDamageProjectiles();
 
         // Draw ally projectiles
         projectiles.forEach(proj => {
@@ -373,6 +374,30 @@ const Rendering = (function() {
             ctx.lineTo(screenX + 3, screenY);
             ctx.moveTo(screenX, screenY - 3);
             ctx.lineTo(screenX, screenY + 3);
+            ctx.stroke();
+        });
+
+        // Draw damage projectiles (healer's green projectiles attacking enemies)
+        damageProjectiles.forEach(proj => {
+            const coord = screenCoordinate(proj.worldX, proj.worldY, camera, viewportOriginX);
+            const screenX = coord.screenX;
+            const screenY = coord.screenY;
+
+            // Glowing effect
+            ctx.globalAlpha = 0.4;
+            ctx.fillStyle = '#00ff00';
+            ctx.beginPath();
+            ctx.arc(screenX, screenY, 10, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Core projectile
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = '#00dd00';
+            ctx.strokeStyle = '#00ff00';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(screenX, screenY, 5, 0, Math.PI * 2);
+            ctx.fill();
             ctx.stroke();
         });
     }

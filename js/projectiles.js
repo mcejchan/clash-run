@@ -3,6 +3,7 @@ const Projectiles = (function() {
     let projectiles = [];
     let arrows = [];
     let healProjectiles = [];
+    let damageProjectiles = []; // Green projectiles from healer attacking enemies
 
     function create(worldX, worldY, dx, dy, damage, target) {
         projectiles.push({
@@ -41,6 +42,20 @@ const Projectiles = (function() {
             target: null,
             isPlayer: false,
             isHeal: true
+        });
+    }
+
+    function createDamageProjectile(worldX, worldY, dx, dy, damage) {
+        damageProjectiles.push({
+            worldX,
+            worldY,
+            dx,
+            dy,
+            speed: 8,
+            damage,
+            target: null,
+            isPlayer: true, // Created by player
+            isDamage: true
         });
     }
 
@@ -121,41 +136,82 @@ const Projectiles = (function() {
         // Update heal projectiles
         for (let i = healProjectiles.length - 1; i >= 0; i--) {
             const proj = healProjectiles[i];
-            
+
             proj.worldX += proj.dx * proj.speed;
             proj.worldY += proj.dy * proj.speed;
-            
+
             // Check collision with all players
             let healed = false;
             const players = Player.getAllPlayers();
-            
+
             players.forEach(target => {
                 if (target.hp <= 0 || target.hp >= target.maxHp) return;
-                
+
                 const dx = target.worldX - proj.worldX;
                 const dy = target.worldY - proj.worldY;
                 const dist = Math.sqrt(dx * dx + dy * dy);
-                
+
                 if (dist < 35) { // Larger healing radius
                     target.hp = Math.min(target.hp + proj.healAmount, target.maxHp);
                     healed = true;
                 }
             });
-            
+
             if (healed) {
                 healProjectiles.splice(i, 1);
                 continue;
             }
-            
+
             // Remove heal projectiles off screen
             const world = Player.getWorldOffset();
             const canvas = document.getElementById('gameCanvas');
             const screenX = proj.worldX - world.offsetX + canvas.width / 2;
             const screenY = proj.worldY - world.offsetY + canvas.height / 2;
-            
+
             if (screenX < -50 || screenX > canvas.width + 50 ||
                 screenY < -50 || screenY > canvas.height + 50) {
                 healProjectiles.splice(i, 1);
+            }
+        }
+
+        // Update damage projectiles (healer's green projectiles attacking enemies)
+        for (let i = damageProjectiles.length - 1; i >= 0; i--) {
+            const proj = damageProjectiles[i];
+
+            proj.worldX += proj.dx * proj.speed;
+            proj.worldY += proj.dy * proj.speed;
+
+            // Check collision with enemies
+            const enemies = Units.getEnemies();
+            let hit = false;
+
+            enemies.forEach(enemy => {
+                if (enemy.hp <= 0) return;
+
+                const dx = enemy.worldX - proj.worldX;
+                const dy = enemy.worldY - proj.worldY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < 25) {
+                    enemy.hp -= proj.damage;
+                    hit = true;
+                }
+            });
+
+            if (hit) {
+                damageProjectiles.splice(i, 1);
+                continue;
+            }
+
+            // Remove damage projectiles off screen
+            const world = Player.getWorldOffset();
+            const canvas = document.getElementById('gameCanvas');
+            const screenX = proj.worldX - world.offsetX + canvas.width / 2;
+            const screenY = proj.worldY - world.offsetY + canvas.height / 2;
+
+            if (screenX < -50 || screenX > canvas.width + 50 ||
+                screenY < -50 || screenY > canvas.height + 50) {
+                damageProjectiles.splice(i, 1);
             }
         }
     }
@@ -172,13 +228,19 @@ const Projectiles = (function() {
         return healProjectiles;
     }
 
+    function getDamageProjectiles() {
+        return damageProjectiles;
+    }
+
     return {
         create,
         createArrow,
         createHealProjectile,
+        createDamageProjectile,
         update,
         getAll,
         getArrows,
-        getHealProjectiles
+        getHealProjectiles,
+        getDamageProjectiles
     };
 })();

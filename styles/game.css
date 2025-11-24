@@ -113,3 +113,204 @@ body {
 .minimap canvas {
     border-radius: 4px;
 }
+
+/* Shop modal styles */
+#shop-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+#shop-modal.show {
+    display: flex;
+}
+
+.shop-container {
+    background: #2d3436;
+    border: 3px solid #fdcb6e;
+    border-radius: 15px;
+    padding: 40px;
+    max-width: 800px;
+    max-height: 80vh;
+    overflow-y: auto;
+    color: white;
+    box-shadow: 0 0 30px rgba(253, 203, 110, 0.6);
+}
+
+.shop-header {
+    text-align: center;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #fdcb6e;
+    padding-bottom: 15px;
+}
+
+.shop-header h1 {
+    font-size: 32px;
+    margin-bottom: 10px;
+}
+
+.shop-coins {
+    font-size: 24px;
+    color: #fdcb6e;
+}
+
+.shop-section {
+    margin-bottom: 30px;
+}
+
+.shop-section h2 {
+    font-size: 20px;
+    margin-bottom: 15px;
+    color: #fdcb6e;
+    border-bottom: 1px solid #555;
+    padding-bottom: 10px;
+}
+
+.shop-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.shop-item {
+    background: #34495e;
+    border: 2px solid #555;
+    border-radius: 10px;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.shop-item:hover {
+    border-color: #fdcb6e;
+    background: #3d5a73;
+    transform: translateY(-5px);
+}
+
+.shop-item.owned {
+    border-color: #2ecc71;
+    background: #1e5631;
+    opacity: 0.7;
+}
+
+.shop-item h3 {
+    font-size: 16px;
+    margin-bottom: 5px;
+    color: #fff;
+}
+
+.shop-item .description {
+    font-size: 12px;
+    color: #bdc3c7;
+    margin-bottom: 10px;
+}
+
+.shop-item .price {
+    font-size: 18px;
+    font-weight: bold;
+    color: #fdcb6e;
+    margin-bottom: 10px;
+}
+
+.shop-item.owned .price::before {
+    content: '✓ Vlastněno';
+    font-size: 14px;
+    color: #2ecc71;
+}
+
+.shop-item button {
+    width: 100%;
+    padding: 10px;
+    background: linear-gradient(135deg, #ff6b35, #f7931e);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.shop-item button:hover {
+    background: linear-gradient(135deg, #ff8c42, #f9a826);
+    transform: translateY(-2px);
+}
+
+.shop-item button:disabled {
+    background: linear-gradient(135deg, #636e72, #2d3436);
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.shop-item.owned button {
+    display: none;
+}
+
+.game-over-section {
+    background: #1a1a1a;
+    border: 2px solid #e74c3c;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.game-over-section h2 {
+    color: #e74c3c;
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.game-over-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.stat-box {
+    background: #2d3436;
+    border: 1px solid #555;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #95a5a6;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #fdcb6e;
+}
+
+.play-button {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 20px;
+}
+
+.play-button:hover {
+    background: linear-gradient(135deg, #3dd580, #2eae5f);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
+}
