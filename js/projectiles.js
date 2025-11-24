@@ -232,6 +232,13 @@ const Projectiles = (function() {
         return damageProjectiles;
     }
 
+    function reset() {
+        projectiles = [];
+        arrows = [];
+        healProjectiles = [];
+        damageProjectiles = [];
+    }
+
     return {
         create,
         createArrow,
@@ -241,6 +248,7 @@ const Projectiles = (function() {
         getAll,
         getArrows,
         getHealProjectiles,
-        getDamageProjectiles
+        getDamageProjectiles,
+        reset
     };
 })();

@@ -177,17 +177,15 @@ const Shop = (function() {
 
         if (!player1 || !player2) return;
 
-        // Reset to default values
+        // Reset to default values (stats only, not HP)
         player1.damage = 15;
         player1.speed = 3;
         player1.maxHp = 100;
-        player1.hp = Math.min(player1.hp, 100);
 
         player2.healAmount = 15;
         player2.projectileDamage = 15;
         player2.speed = 2.5;
         player2.maxHp = 80;
-        player2.hp = Math.min(player2.hp, 80);
 
         // Apply upgrades
         if (gameState.upgrades.archer_damage) {
@@ -204,6 +202,10 @@ const Shop = (function() {
             player1.maxHp = 120;
             player2.maxHp = 100;
         }
+
+        // Restore HP to max on game start
+        player1.hp = player1.maxHp;
+        player2.hp = player2.maxHp;
     }
 
     // Select skin

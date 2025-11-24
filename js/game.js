@@ -29,6 +29,7 @@ const Game = (function() {
         Units.init(canvas);
         Rendering.init(canvas);
         UI.init();
+        Projectiles.reset();
 
         // Apply any active upgrades
         Shop.applyUpgrades();
