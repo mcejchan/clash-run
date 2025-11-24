@@ -452,6 +452,14 @@ const Rendering = (function() {
         // Render right viewport (Player 2)
         renderViewport(camera2, viewportWidth, viewportWidth);
 
+        // Draw dividing line between the two viewports
+        ctx.strokeStyle = '#333333';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(viewportWidth, 0);
+        ctx.lineTo(viewportWidth, viewportHeight);
+        ctx.stroke();
+
         // Draw unified mini-maps (outside clipped regions)
         drawMiniMaps();
     }
