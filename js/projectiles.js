@@ -95,27 +95,27 @@ const Projectiles = (function() {
         // Update arrows
         for (let i = arrows.length - 1; i >= 0; i--) {
             const proj = arrows[i];
-            
+
             proj.worldX += proj.dx * proj.speed;
             proj.worldY += proj.dy * proj.speed;
-            
+
             // Check collision with enemies
             const enemies = Units.getEnemies();
             let hit = false;
-            
+
             enemies.forEach(enemy => {
                 if (enemy.hp <= 0) return;
-                
+
                 const dx = enemy.worldX - proj.worldX;
                 const dy = enemy.worldY - proj.worldY;
                 const dist = Math.sqrt(dx * dx + dy * dy);
-                
+
                 if (dist < 30) { // Slightly larger hitbox for arrows
                     enemy.hp -= proj.damage;
                     hit = true;
                 }
             });
-            
+
             if (hit) {
                 arrows.splice(i, 1);
                 continue;

@@ -25,7 +25,10 @@ const Units = (function() {
                 slowDownTimer: 0,
                 slowDownInterval: Math.random() * Config.get('robot.slowDownMaxInterval') + Config.get('robot.slowDownMinInterval'),
                 isSlow: false,
-                isAttacking: false
+                isAttacking: false,
+                currentTarget: null, // Individuální target pro tohoto robota
+                targetUpdateTimer: 0,
+                targetUpdateInterval: 30 // Aktualizovat target každých 30 framů
             }
         ];
         
@@ -40,25 +43,37 @@ const Units = (function() {
         enemies.forEach(enemy => {
             if (enemy.hp <= 0) return;
 
-            // Get all players as targets
-            const players = Player.getAllPlayers();
+            // Aktualizuj target na intervalu
+            enemy.targetUpdateTimer++;
+            if (enemy.targetUpdateTimer >= enemy.targetUpdateInterval) {
+                enemy.targetUpdateTimer = 0;
 
-            // Find nearest target
-            let target = null;
-            let targetDist = Infinity;
+                // Get all players as targets
+                const players = Player.getAllPlayers();
 
-            players.forEach(p => {
-                if (p.hp <= 0) return;
-                
-                const dx = p.worldX - enemy.worldX;
-                const dy = p.worldY - enemy.worldY;
-                const dist = Math.sqrt(dx * dx + dy * dy);
+                // Find nearest target
+                let newTarget = null;
+                let targetDist = Infinity;
 
-                if (dist < targetDist) {
-                    targetDist = dist;
-                    target = p;
-                }
-            });
+                players.forEach(p => {
+                    if (p.hp <= 0) return;
+
+                    const dx = p.worldX - enemy.worldX;
+                    const dy = p.worldY - enemy.worldY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < targetDist) {
+                        targetDist = dist;
+                        newTarget = p;
+                    }
+                });
+
+                // Nastav aktuální target
+                enemy.currentTarget = newTarget;
+            }
+
+            // Použij aktuální target
+            const target = enemy.currentTarget;
 
             // Detect dangerous projectiles nearby
             let dangerousProjectile = null;
