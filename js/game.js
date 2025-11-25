@@ -42,18 +42,18 @@ const Game = (function() {
     }
 
     function update() {
-        // Check if any player is dead
+        // Check if both players are dead
         const players = Player.getAllPlayers();
-        let anyPlayerDead = false;
+        let allPlayersDead = true;
 
         for (const player of players) {
-            if (player.hp <= 0) {
-                anyPlayerDead = true;
+            if (player.hp > 0) {
+                allPlayersDead = false;
                 break;
             }
         }
 
-        if (anyPlayerDead) {
+        if (allPlayersDead) {
             Shop.endGame();
             showGameOver();
             return;
