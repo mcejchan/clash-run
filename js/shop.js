@@ -84,6 +84,15 @@ const Shop = (function() {
                 player1: 'default',
                 player2: 'doctor'
             };
+        } else {
+            // Initialize default values if no saved data exists
+            gameState.totalCoins = gameState.totalCoins || 0;
+            gameState.ownedSkins = gameState.ownedSkins || [];
+            gameState.upgrades = gameState.upgrades || {};
+            gameState.selectedSkins = gameState.selectedSkins || {
+                player1: 'default',
+                player2: 'doctor'
+            };
         }
     }
 

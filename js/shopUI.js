@@ -126,12 +126,22 @@ const ShopUI = (function() {
     }
 
     function purchaseItem(itemId) {
+        const allItems = [...Shop.getShopItems().skins, ...Shop.getShopItems().upgrades];
+        const item = allItems.find(i => i.id === itemId);
+        const currentCoins = Shop.getTotalCoins();
+
         const success = Shop.purchaseItem(itemId);
         if (success) {
             // Re-render shop
             renderShop();
         } else {
-            alert('Nemáš dost mincí!');
+            if (!item) {
+                alert('Položka nebyla nalezena!');
+            } else if (Shop.isItemOwned(itemId)) {
+                alert('Tuto položku již vlastníš!');
+            } else {
+                alert(`Nemáš dost mincí!\nMáš: ${currentCoins} 💰\nPotřebuješ: ${item.price} 💰\nChybí ti: ${item.price - currentCoins} 💰`);
+            }
         }
     }
 
