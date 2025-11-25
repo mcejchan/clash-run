@@ -3,6 +3,9 @@ const ShopUI = (function() {
     let isShopOpen = false;
 
     function init() {
+        // Reset shop state for new game
+        isShopOpen = false;
+
         const playAgainButton = document.getElementById('play-again-button');
         if (playAgainButton) {
             playAgainButton.addEventListener('click', playAgain);
