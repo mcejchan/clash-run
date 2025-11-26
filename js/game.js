@@ -59,6 +59,23 @@ const Game = (function() {
             return;
         }
 
+        // Check if all enemies are defeated (win condition)
+        const enemies = Units.getEnemies();
+        let allEnemiesDead = true;
+
+        for (const enemy of enemies) {
+            if (enemy.hp > 0) {
+                allEnemiesDead = false;
+                break;
+            }
+        }
+
+        if (allEnemiesDead) {
+            Shop.endGame();
+            showGameOver();
+            return;
+        }
+
         Player.update();
         Units.updateEnemies();
         Units.updateAllies();
