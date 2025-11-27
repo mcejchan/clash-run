@@ -112,6 +112,7 @@ const Projectiles = (function() {
 
                 if (dist < 30) { // Slightly larger hitbox for arrows
                     enemy.hp -= proj.damage;
+                    Audio.playSound('hit');
                     hit = true;
                 }
             });
@@ -153,6 +154,7 @@ const Projectiles = (function() {
 
                 if (dist < 35) { // Larger healing radius
                     target.hp = Math.min(target.hp + proj.healAmount, target.maxHp);
+                    Audio.playSound('heal');
                     healed = true;
                 }
             });

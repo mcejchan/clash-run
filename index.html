@@ -21,6 +21,15 @@
     </div>
     <canvas id="gameCanvas"></canvas>
 
+    <!-- Mobile Controls -->
+    <div id="mobile-controls" class="mobile-controls">
+        <button class="mobile-control-btn mobile-control-up" data-key="w">▲</button>
+        <button class="mobile-control-btn mobile-control-left" data-key="a">◀</button>
+        <button class="mobile-control-btn mobile-control-right" data-key="d">▶</button>
+        <button class="mobile-control-btn mobile-control-down" data-key="s">▼</button>
+        <div class="mobile-control-label">⌨️ WASD</div>
+    </div>
+
     <!-- Shop Modal -->
     <div id="shop-modal">
         <div class="shop-container">
@@ -47,7 +56,9 @@
 
     <!-- Load all game modules -->
     <script src="js/config.js"></script>
+    <script src="js/audio.js"></script>
     <script src="js/input.js"></script>
+    <script src="js/mobileUI.js"></script>
     <script src="js/obstacles.js"></script>
     <script src="js/player.js"></script>
     <script src="js/projectiles.js"></script>

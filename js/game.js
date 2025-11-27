@@ -25,6 +25,7 @@ const Game = (function() {
 
         // Initialize all systems
         Input.init();
+        MobileUI.init();
         Player.init(canvas);
         Units.init(canvas);
         Rendering.init(canvas);
@@ -54,6 +55,7 @@ const Game = (function() {
         }
 
         if (allPlayersDead) {
+            Audio.playSound('lose');
             Shop.endGame();
             showGameOver();
             return;
@@ -71,6 +73,7 @@ const Game = (function() {
         }
 
         if (allEnemiesDead) {
+            Audio.playSound('win');
             Shop.endGame();
             showGameOver();
             return;

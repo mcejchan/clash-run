@@ -135,6 +135,7 @@ const Units = (function() {
 
                     if (enemy.attackTimer >= enemy.attackCooldown) {
                         target.hp -= enemy.damage;
+                        Audio.playSound('damage');
                         enemy.attackTimer = 0;
                     }
                 }

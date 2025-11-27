@@ -42,6 +42,10 @@ const Input = (function() {
         return keys[key] || false;
     }
 
+    function setKeyPressed(key, pressed) {
+        keys[key] = pressed;
+    }
+
     function getMovementInput() {
         let dx = 0;
         let dy = 0;
@@ -145,6 +149,7 @@ const Input = (function() {
     return {
         init,
         isPressed,
+        setKeyPressed,
         getMovementInput,
         getMovementInputPlayer2,
         getMovementInputPlayer3,

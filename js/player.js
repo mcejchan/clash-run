@@ -146,9 +146,11 @@ const Player = (function() {
         if (playerId === 0) {
             // Player 1: Create arrow
             Projectiles.createArrow(shootWorldX, shootWorldY, direction.dx, direction.dy, player.damage);
+            Audio.playSound('shoot');
         } else {
             // Player 2: Create heal projectile
             Projectiles.createHealProjectile(shootWorldX, shootWorldY, direction.dx, direction.dy, player.healAmount);
+            Audio.playSound('heal');
         }
 
         shootCooldowns[playerId] = shootCooldownMaxes[playerId];
