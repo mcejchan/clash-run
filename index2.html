@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clash Run</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            overflow: hidden;
+            background: #2d3436;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        
+        #gameCanvas {
+            border: 3px solid #fdcb6e;
+            background: #55efc4;
+            box-shadow: 0 0 20px rgba(253, 203, 110, 0.5);
+        }
+        
+        #info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+        
+        #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            display: none;
+            border: 3px solid #fdcb6e;
+            z-index: 10;
+        }
+        
+        #gameOver h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        #gameOver p {
+            font-size: 24px;
+            margin-bottom: 30px;
+        }
+        
+        #restartBtn {
+            background: #fdcb6e;
+            color: #2d3436;
+            border: none;
+            padding: 15px 40px;
+            font-size: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        #restartBtn:hover {
+            background: #f9ca24;
+        }
+        
+        .controls {
+            position: absolute;
+            display: grid;
+            grid-template-columns: repeat(3, 60px);
+            grid-template-rows: repeat(3, 60px);
+            gap: 5px;
+        }
+        
+        #controls-archer {
+            bottom: 30px;
+            left: 30px;
+        }
+        
+        #controls-healer {
+            bottom: 30px;
+            right: 30px;
+        }
+        
+        .control-btn {
+            border-radius: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            border: 3px solid;
+        }
+        
+        .archer-btn {
+            background: rgba(39, 174, 96, 0.8);
+            border-color: #27ae60;
+        }
+        
+        .archer-btn:active {
+            background: rgba(34, 153, 84, 1);
+        }
+        
+        .healer-btn {
+            background: rgba(52, 152, 219, 0.8);
+            border-color: #3498db;
+        }
+        
+        .healer-btn:active {
+            background: rgba(41, 128, 185, 1);
+        }
+        
+        .up { grid-column: 2; grid-row: 1; }
+        .left { grid-column: 1; grid-row: 2; }
+        .right { grid-column: 3; grid-row: 2; }
+        .down { grid-column: 2; grid-row: 3; }
+        
+        .label {
+            grid-column: 1 / 4;
+            grid-row: 4;
+            text-align: center;
+            color: white;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="info">
+        <strong>🎮 CLASH RUN 🎮</strong><br><br>
+        <strong style="color: #27ae60;">🏹 Lukostřelec (WASD):</strong> <span id="archer-hp">150</span> HP<br>
+        <strong style="color: #3498db;">💚 Lékař (Šipky):</strong> <span id="healer-hp">120</span> HP<br>
+        <br>
+        <strong>⭐ Skóre:</strong> <span id="score">0</span> / 3<br>
+        <br>
+        <strong style="color: #e74c3c;">⚠️ Nepřátelé:</strong><br>
+        🤖 Robot 1: <span id="robot1-hp">1000</span> HP<br>
+        🤖 Robot 2: <span id="robot2-hp">1000</span> HP<br>
+        🤖 Robot 3: <span id="robot3-hp">1000</span> HP
+    </div>
+    
+    <div id="gameOver">
+        <h1 id="gameOverTitle">VÝHRA!</h1>
+        <p id="gameOverText">Porazil jsi všechny roboty!</p>
+        <button id="restartBtn">Hrát znovu</button>
+    </div>
+    
+    <div id="controls-archer" class="controls">
+        <button class="control-btn archer-btn up" data-key="w">▲</button>
+        <button class="control-btn archer-btn left" data-key="a">◀</button>
+        <button class="control-btn archer-btn right" data-key="d">▶</button>
+        <button class="control-btn archer-btn down" data-key="s">▼</button>
+        <div class="label">🏹 WASD</div>
+    </div>
+    
+    <div id="controls-healer" class="controls">
+        <button class="control-btn healer-btn up" data-key="ArrowUp">▲</button>
+        <button class="control-btn healer-btn left" data-key="ArrowLeft">◀</button>
+        <button class="control-btn healer-btn right" data-key="ArrowRight">▶</button>
+        <button class="control-btn healer-btn down" data-key="ArrowDown">▼</button>
+        <div class="label">💚 Šipky</div>
+    </div>
+    
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 600;
+        
+        let gameState = 'playing';
+        let score = 0;
+        const keys = {};
+        let allies = [];
+        let enemies = [];
+        let projectiles = [];
+        
+        const obstacles = [
+            { x: 100, y: 100, size: 40, type: 'tree' },
+            { x: 300, y: 50, size: 45, type: 'tree' },
+            { x: 600, y: 200, size: 38, type: 'tree' },
+            { x: 500, y: 450, size: 42, type: 'tree' },
+            { x: 150, y: 400, size: 35, type: 'rock' },
+            { x: 650, y: 100, size: 30, type: 'rock' },
+            { x: 400, y: 250, size: 38, type: 'rock' },
+            { x: 200, y: 500, size: 60, type: 'building' },
+            { x: 650, y: 450, size: 55, type: 'building' }
+        ];
+        
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound(type) {
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            
+            switch(type) {
+                case 'shoot':
+                    osc.frequency.value = 800;
+                    osc.type = 'square';
+                    gain.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                    osc.start();
+                    osc.stop(audioContext.currentTime + 0.1);
+                    break;
+                case 'hit':
+                    osc.frequency.value = 200;
+                    osc.type = 'sawtooth';
+                    gain.gain.setValueAtTime(0.4, audioContext.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+                    osc.start();
+                    osc.stop(audioContext.currentTime + 0.15);
+                    break;
+                case 'heal':
+                    osc.frequency.value = 600;
+                    osc.type = 'sine';
+                    gain.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioContext.currentTime + 0.3);
+                    break;
+                case 'explosion':
+                    osc.frequency.value = 100;
+                    osc.type = 'sawtooth';
+                    gain.gain.setValueAtTime(0.5, audioContext.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+                    osc.start();
+                    osc.stop(audioContext.currentTime + 0.4);
+                    break;
+                case 'damage':
+                    osc.frequency.value = 300;
+                    osc.type = 'triangle';
+                    gain.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                    osc.start();
+                    osc.stop(audioContext.currentTime + 0.2);
+                    break;
+                case 'win':
+                    [523, 659, 784, 1047].forEach((f, i) => {
+                        const o = audioContext.createOscillator();
+                        const g = audioContext.createGain();
+                        o.connect(g);
+                        g.connect(audioContext.destination);
+                        o.frequency.value = f;
+                        g.gain.setValueAtTime(0.3, audioContext.currentTime + i * 0.15);
+                        g.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.15 + 0.3);
+                        o.start(audioContext.currentTime + i * 0.15);
+                        o.stop(audioContext.currentTime + i * 0.15 + 0.3);
+                    });
+                    return;
+                case 'lose':
+                    osc.frequency.value = 400;
+                    gain.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
+                    osc.start();
+                    osc.stop(audioContext.currentTime + 0.8);
+                    break;
+            }
+        }
+        
+        function initGame() {
+            gameState = 'playing';
+            score = 0;
+            projectiles = [];
+            
+            allies = [
+                {
+                    name: 'Lukostřelec',
+                    x: 250,
+                    y: 300,
+                    width: 35,
+                    height: 45,
+                    speed: 3.5,
+                    color: '#27ae60',
+                    hp: 150,
+                    maxHp: 150,
+                    attackTimer: 0,
+                    attackCooldown: 50,
+                    attackRange: 300,
+                    damage: 20
+                },
+                {
+                    name: 'Lékař',
+                    x: 550,
+                    y: 300,
+                    width: 35,
+                    height: 45,
+                    speed: 3.5,
+                    color: '#3498db',
+                    hp: 120,
+                    maxHp: 120,
+                    healTimer: 0,
+                    healCooldown: 90,
+                    healAmount: 15
+                }
+            ];
+            
+            enemies = [
+                {
+                    name: 'Robot 1',
+                    x: 150,
+                    y: 100,
+                    width: 45,
+                    height: 55,
+                    speed: 1.5,
+                    color: '#95a5a6',
+                    hp: 1000,
+                    maxHp: 1000,
+                    attackTimer: 0,
+                    attackCooldown: 80,
+                    attackRange: 60,
+                    damage: 12,
+                    slowTimer: 0,
+                    slowInterval: 150,
+                    isSlow: false,
+                    isAttacking: false
+                },
+                {
+                    name: 'Robot 2',
+                    x: 650,
+                    y: 150,
+                    width: 45,
+                    height: 55,
+                    speed: 1.3,
+                    color: '#95a5a6',
+                    hp: 1000,
+                    maxHp: 1000,
+                    attackTimer: 0,
+                    attackCooldown: 85,
+                    attackRange: 60,
+                    damage: 12,
+                    slowTimer: 0,
+                    slowInterval: 180,
+                    isSlow: false,
+                    isAttacking: false
+                },
+                {
+                    name: 'Robot 3',
+                    x: 400,
+                    y: 500,
+                    width: 45,
+                    height: 55,
+                    speed: 1.7,
+                    color: '#95a5a6',
+                    hp: 1000,
+                    maxHp: 1000,
+                    attackTimer: 0,
+                    attackCooldown: 75,
+                    attackRange: 60,
+                    damage: 12,
+                    slowTimer: 0,
+                    slowInterval: 120,
+                    isSlow: false,
+                    isAttacking: false
+                }
+            ];
+            
+            document.getElementById('gameOver').style.display = 'none';
+        }
+        
+        window.addEventListener('keydown', (e) => keys[e.key] = true);
+        window.addEventListener('keyup', (e) => keys[e.key] = false);
+        
+        document.getElementById('restartBtn').addEventListener('click', initGame);
+        
+        document.querySelectorAll('.control-btn').forEach(btn => {
+            const key = btn.dataset.key;
+            btn.addEventListener('mousedown', () => keys[key] = true);
+            btn.addEventListener('mouseup', () => keys[key] = false);
+            btn.addEventListener('mouseleave', () => keys[key] = false);
+            btn.addEventListener('touchstart', (e) => { e.preventDefault(); keys[key] = true; });
+            btn.addEventListener('touchend', (e) => { e.preventDefault(); keys[key] = false; });
+        });
+        
+        function drawHealthBar(x, y, hp, maxHp, width) {
+            ctx.fillStyle = '#c0392b';
+            ctx.fillRect(x - width/2, y - 40, width, 5);
+            ctx.fillStyle = '#2ecc71';
+            ctx.fillRect(x - width/2, y - 40, (hp/maxHp) * width, 5);
+        }
+        
+        function drawArcher(a) {
+            if (a.hp <= 0) return;
+            ctx.fillStyle = a.color;
+            ctx.fillRect(a.x - a.width/2, a.y - a.height/2, a.width, a.height);
+            ctx.fillStyle = '#f39c12';
+            ctx.beginPath();
+            ctx.arc(a.x, a.y - a.height/2 - 10, 12, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#8e44ad';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(a.x + 20, a.y, 15, -Math.PI/2, Math.PI/2, false);
+            ctx.stroke();
+            drawHealthBar(a.x, a.y, a.hp, a.maxHp, a.width);
+        }
+        
+        function drawHealer(a) {
+            if (a.hp <= 0) return;
+            ctx.fillStyle = a.color;
+            ctx.fillRect(a.x - a.width/2, a.y - a.height/2, a.width, a.height);
+            ctx.fillStyle = '#f39c12';
+            ctx.beginPath();
+            ctx.arc(a.x, a.y - a.height/2 - 10, 12, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#2ecc71';
+            ctx.fillRect(a.x - 8, a.y - 5, 16, 5);
+            ctx.fillRect(a.x - 2.5, a.y - 11, 5, 16);
+            if (a.healTimer > 0) {
+                ctx.strokeStyle = '#2ecc71';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(a.x, a.y, 30, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            drawHealthBar(a.x, a.y, a.hp, a.maxHp, a.width);
+        }
+        
+        function drawRobot(e) {
+            if (e.hp <= 0) return;
+            ctx.fillStyle = e.isAttacking ? '#c0392b' : (e.isSlow ? '#7f8c8d' : e.color);
+            ctx.fillRect(e.x - e.width/2, e.y - e.height/2, e.width, e.height);
+            ctx.fillStyle = '#34495e';
+            ctx.fillRect(e.x - 15, e.y - e.height/2 - 20, 30, 20);
+            ctx.fillStyle = e.isAttacking ? '#ff0000' : '#e74c3c';
+            ctx.fillRect(e.x - 10, e.y - e.height/2 - 15, 6, 6);
+            ctx.fillRect(e.x + 4, e.y - e.height/2 - 15, 6, 6);
+            ctx.fillStyle = '#e74c3c';
+            ctx.beginPath();
+            ctx.arc(e.x, e.y - e.height/2 - 30, 3, 0, Math.PI * 2);
+            ctx.fill();
+            if (e.isAttacking) {
+                ctx.strokeStyle = '#e74c3c';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(e.x, e.y, 40, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            drawHealthBar(e.x, e.y, e.hp, e.maxHp, e.width);
+        }
+        
+        function drawObstacles() {
+            obstacles.forEach(o => {
+                if (o.type === 'tree') {
+                    ctx.fillStyle = '#8B4513';
+                    ctx.fillRect(o.x - 8, o.y + 10, 16, 20);
+                    ctx.fillStyle = '#27ae60';
+                    ctx.beginPath();
+                    ctx.arc(o.x, o.y - 5, o.size/2, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (o.type === 'rock') {
+                    ctx.fillStyle = '#7f8c8d';
+                    ctx.beginPath();
+                    ctx.arc(o.x, o.y, o.size/2, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (o.type === 'building') {
+                    ctx.fillStyle = '#e67e22';
+                    ctx.fillRect(o.x - o.size/2, o.y - o.size/2, o.size, o.size);
+                    ctx.fillStyle = '#c0392b';
+                    ctx.beginPath();
+                    ctx.moveTo(o.x - o.size/2, o.y - o.size/2);
+                    ctx.lineTo(o.x, o.y - o.size/2 - 15);
+                    ctx.lineTo(o.x + o.size/2, o.y - o.size/2);
+                    ctx.fill();
+                }
+            });
+        }
+        
+        function checkCollision(x, y, w, h) {
+            if (x < w/2 || x > canvas.width - w/2 || y < h/2 || y > canvas.height - h/2) return true;
+            return obstacles.some(o => {
+                const dx = Math.abs(x - o.x);
+                const dy = Math.abs(y - o.y);
+                return dx < (o.size + w)/2 && dy < (o.size + h)/2;
+            });
+        }
+        
+        function updateAllies() {
+            let alive = 0;
+            allies.forEach((a, i) => {
+                if (a.hp <= 0) return;
+                alive++;
+                
+                const oldX = a.x, oldY = a.y;
+                
+                if (i === 0) {
+                    if (keys['w'] || keys['W']) a.y -= a.speed;
+                    if (keys['s'] || keys['S']) a.y += a.speed;
+                    if (keys['a'] || keys['A']) a.x -= a.speed;
+                    if (keys['d'] || keys['D']) a.x += a.speed;
+                } else {
+                    if (keys['ArrowUp']) a.y -= a.speed;
+                    if (keys['ArrowDown']) a.y += a.speed;
+                    if (keys['ArrowLeft']) a.x -= a.speed;
+                    if (keys['ArrowRight']) a.x += a.speed;
+                }
+                
+                if (checkCollision(a.x, a.y, a.width, a.height)) {
+                    a.x = oldX;
+                    a.y = oldY;
+                }
+                
+                if (i === 0) {
+                    a.attackTimer++;
+                    if (a.attackTimer >= a.attackCooldown) {
+                        enemies.forEach(e => {
+                            if (e.hp <= 0) return;
+                            const dx = e.x - a.x;
+                            const dy = e.y - a.y;
+                            const dist = Math.sqrt(dx*dx + dy*dy);
+                            if (dist < a.attackRange) {
+                                projectiles.push({ x: a.x, y: a.y, dx: dx/dist, dy: dy/dist, speed: 6, damage: a.damage, target: e });
+                                playSound('shoot');
+                                a.attackTimer = 0;
+                            }
+                        });
+                    }
+                } else {
+                    if (a.healTimer > 0) a.healTimer--;
+                    a.attackTimer++;
+                    if (a.attackTimer >= a.healCooldown) {
+                        allies.forEach(ally => {
+                            if (ally.hp > 0 && ally.hp < ally.maxHp) {
+                                ally.hp = Math.min(ally.hp + a.healAmount, ally.maxHp);
+                                a.healTimer = 30;
+                                a.attackTimer = 0;
+                                playSound('heal');
+                            }
+                        });
+                    }
+                }
+            });
+            
+            if (alive === 0 && gameState === 'playing') {
+                gameState = 'lost';
+                showGameOver(false);
+            }
+        }
+        
+        function updateEnemies() {
+            let alive = 0;
+            enemies.forEach(e => {
+                if (e.hp <= 0) return;
+                alive++;
+                
+                let closest = null, minDist = Infinity;
+                allies.forEach(a => {
+                    if (a.hp <= 0) return;
+                    const dx = a.x - e.x;
+                    const dy = a.y - e.y;
+                    const d = Math.sqrt(dx*dx + dy*dy);
+                    if (d < minDist) {
+                        minDist = d;
+                        closest = a;
+                    }
+                });
+                
+                e.slowTimer++;
+                if (e.slowTimer > e.slowInterval) {
+                    e.isSlow = !e.isSlow;
+                    e.slowTimer = 0;
+                }
+                
+                const spd = e.isSlow ? e.speed * 0.3 : e.speed;
+                
+                if (closest && minDist > e.attackRange) {
+                    const dx = closest.x - e.x;
+                    const dy = closest.y - e.y;
+                    const d = Math.sqrt(dx*dx + dy*dy);
+                    const oldX = e.x, oldY = e.y;
+                    e.x += (dx/d) * spd;
+                    e.y += (dy/d) * spd;
+                    if (checkCollision(e.x, e.y, e.width, e.height)) {
+                        e.x = oldX;
+                        e.y = oldY;
+                    }
+                    e.isAttacking = false;
+                } else if (closest && minDist <= e.attackRange) {
+                    e.attackTimer++;
+                    e.isAttacking = true;
+                    if (e.attackTimer >= e.attackCooldown) {
+                        closest.hp -= e.damage;
+                        playSound('damage');
+                        e.attackTimer = 0;
+                    }
+                } else {
+                    e.isAttacking = false;
+                }
+            });
+            
+            if (alive === 0 && gameState === 'playing') {
+                gameState = 'won';
+                showGameOver(true);
+            }
+        }
+        
+        function updateProjectiles() {
+            for (let i = projectiles.length - 1; i >= 0; i--) {
+                const p = projectiles[i];
+                p.x += p.dx * p.speed;
+                p.y += p.dy * p.speed;
+                
+                if (p.target && p.target.hp > 0) {
+                    const dx = p.target.x - p.x;
+                    const dy = p.target.y - p.y;
+                    if (Math.sqrt(dx*dx + dy*dy) < 20) {
+                        const wasAlive = p.target.hp > 0;
+                        p.target.hp -= p.damage;
+                        playSound('hit');
+                        if (wasAlive && p.target.hp <= 0) {
+                            score++;
+                            playSound('explosion');
+                        }
+                        projectiles.splice(i, 1);
+                        continue;
+                    }
+                }
+                
+                if (p.x < 0 || p.x > canvas.width || p.y < 0 || p.y > canvas.height) {
+                    projectiles.splice(i, 1);
+                }
+            }
+        }
+        
+        function showGameOver(won) {
+            const div = document.getElementById('gameOver');
+            const title = document.getElementById('gameOverTitle');
+            const text = document.getElementById('gameOverText');
+            
+            if (won) {
+                title.textContent = '🎉 VÝHRA! 🎉';
+                title.style.color = '#2ecc71';
+                text.textContent = 'Porazil jsi všechny 3 roboty!';
+                playSound('win');
+            } else {
+                title.textContent = '💀 PROHRA 💀';
+                title.style.color = '#e74c3c';
+                text.textContent = `Tvoje armáda byla poražena! Skóre: ${score}/3`;
+                playSound('lose');
+            }
+            
+            div.style.display = 'block';
+        }
+        
+        function updateUI() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('archer-hp').textContent = Math.max(0, Math.round(allies[0].hp));
+            document.getElementById('healer-hp').textContent = Math.max(0, Math.round(allies[1].hp));
+            document.getElementById('robot1-hp').textContent = Math.max(0, Math.round(enemies[0].hp));
+            document.getElementById('robot2-hp').textContent = Math.max(0, Math.round(enemies[1].hp));
+            document.getElementById('robot3-hp').textContent = Math.max(0, Math.round(enemies[2].hp));
+        }
+        
+        function gameLoop() {
+            ctx.fillStyle = '#55efc4';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            drawObstacles();
+            
+            projectiles.forEach(p => {
+                ctx.fillStyle = '#c0392b';
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            enemies.forEach(drawRobot);
+            drawArcher(allies[0]);
+            drawHealer(allies[1]);
+            
+            if (gameState === 'playing') {
+                updateAllies();
+                updateEnemies();
+                updateProjectiles();
+                updateUI();
+            }
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        initGame();
+        gameLoop();
+    </script>
+</body>
+</html>
